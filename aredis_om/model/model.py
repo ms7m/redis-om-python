@@ -23,7 +23,7 @@ from typing import (
     Union,
     no_type_check,
 )
-
+from pydantic import BaseSettings
 from more_itertools import ichunked
 from pydantic import BaseModel, validator
 from pydantic.fields import FieldInfo as PydanticFieldInfo
@@ -1314,6 +1314,15 @@ class RedisModel(BaseModel, abc.ABC, metaclass=ModelMeta):
 
 
 class HashModel(RedisModel, abc.ABC):
+    def __init__(__pydantic_self__, **data: Any) -> None:
+        if hasattr(__pydantic_self__, "Settings"):
+            if hasattr(__pydantic_self__.Settings, "database_connection"):
+                __pydantic_self__._meta.database = (
+                    __pydantic_self__.Settings.database_connection()
+                )
+
+        super().__init__(**data)
+
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
 
